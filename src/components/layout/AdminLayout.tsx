@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Toaster } from 'sonner';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
 
 export default function AdminLayout() {
@@ -21,6 +21,11 @@ export default function AdminLayout() {
   const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) {
+       setLoading(false);
+       return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
