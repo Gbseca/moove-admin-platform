@@ -21,6 +21,7 @@ export default function AdminLayout() {
   const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
+    // Even if not configured, our mock handles this now.
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
@@ -35,23 +36,24 @@ export default function AdminLayout() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
-  };
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !session) {
+      navigate('/auth');
+    }
+  }, [loading, session, navigate]);
 
   if (loading) {
      return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">Loading...</div>;
   }
 
-  // Basic protection
-  if (!session) {
-    // In production, uncomment this to enforce protection
-    // navigate('/auth');
-    // For now, let's allow viewing the layout structure or redirect
-    // Use the requested logic:
-    // return <Navigate to="/auth" />;
-  }
+  // Render nothing while redirecting
+  if (!session) return null;
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
