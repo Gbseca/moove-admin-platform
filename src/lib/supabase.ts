@@ -1,7 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+// Mock Supabase Client for Demo Mode
+// This allows the app to run without a real backend connection
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Define basic types to satisfy usage
+type AuthStateChangeCallback = (event: string, session: any) => void;
 
 // If environment variables are missing, we create a client with dummy values to prevent crash
 // The app will check for session/connection and handle errors gracefully in the UI
