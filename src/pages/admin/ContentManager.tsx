@@ -3,22 +3,37 @@ import { storage, SiteConfig, Service } from '../../lib/storage';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 
-export default function ContentManager() {
-  const [config, setConfig] = useState<SiteConfig>(storage.getConfig());
+import { useEffect } from 'react';
 
-  const handleSave = () => {
-    storage.saveConfig(config);
-    toast.success('Alterações salvas com sucesso!');
-    // Trigger storage event so other tabs/components update if listening
-    window.dispatchEvent(new Event('storage'));
+export default function ContentManager() {
+  const [config, setConfig] = useState<SiteConfig | null>(null);
+
+  useEffect(() => {
+    storage.getConfig().then(setConfig);
+  }, []);
+
+  const handleSave = async () => {
+    if (!config) return;
+    try {
+      await storage.saveConfig(config);
+      toast.success('Alterações salvas com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao salvar configurações.');
+    }
   };
 
   const handleServiceChange = (id: string, field: keyof Service, value: string) => {
-    setConfig(prev => ({
-      ...prev,
-      services: prev.services.map(s => s.id === id ? { ...s, [field]: value } : s)
-    }));
+    if (!config) return;
+    setConfig(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        services: prev.services.map(s => s.id === id ? { ...s, [field]: value } : s)
+      };
+    });
   };
+
+  if (!config) return <div>Carregando...</div>;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">

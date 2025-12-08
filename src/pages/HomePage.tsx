@@ -4,36 +4,39 @@ import { storage, SiteConfig } from '../lib/storage';
 import { toast } from 'sonner';
 
 export default function HomePage() {
-  const [config, setConfig] = useState<SiteConfig>(storage.getConfig());
+  const [config, setConfig] = useState<SiteConfig | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     vehicleModel: '',
   });
 
-  // Re-fetch config on mount in case it changed
   useEffect(() => {
-    setConfig(storage.getConfig());
-    // Also listen for storage events if needed, but for now mount is enough
-    const handleStorageChange = () => setConfig(storage.getConfig());
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    const loadConfig = async () => {
+      const data = await storage.getConfig();
+      setConfig(data);
+    };
+    loadConfig();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) {
       toast.error('Por favor, preencha nome e telefone.');
       return;
     }
 
-    storage.addLead(formData);
-    toast.success('Solicitação enviada com sucesso! Entraremos em contato em breve.');
-    setFormData({ name: '', phone: '', vehicleModel: '' });
+    try {
+      await storage.addLead(formData);
+      toast.success('Solicitação enviada com sucesso! Entraremos em contato em breve.');
+      setFormData({ name: '', phone: '', vehicleModel: '' });
+    } catch (error) {
+      toast.error('Erro ao enviar solicitação. Tente novamente.');
+    }
   };
 
   const getIcon = (iconName: string) => {
@@ -47,6 +50,8 @@ export default function HomePage() {
       default: return <Shield className="w-10 h-10 text-blue-600" />;
     }
   };
+
+  if (!config) return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
 
   return (
     <div className="font-sans text-slate-900 bg-white">

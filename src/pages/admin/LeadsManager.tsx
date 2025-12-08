@@ -10,19 +10,13 @@ export default function LeadsManager() {
 
   useEffect(() => {
     // Load initial leads
-    setLeads(storage.getLeads());
-
-    // Listen for changes (e.g. new lead submitted in another tab)
-    const handleStorageChange = () => {
-        setLeads(storage.getLeads());
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    storage.getLeads().then(setLeads);
   }, []);
 
-  const handleStatusChange = (id: string, newStatus: Lead['status']) => {
-    storage.updateLeadStatus(id, newStatus);
-    setLeads(storage.getLeads());
+  const handleStatusChange = async (id: string, newStatus: Lead['status']) => {
+    await storage.updateLeadStatus(id, newStatus);
+    const updatedLeads = await storage.getLeads();
+    setLeads(updatedLeads);
   };
 
   const filteredLeads = leads.filter(lead =>

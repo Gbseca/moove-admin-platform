@@ -11,12 +11,13 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    const leads = storage.getLeads();
-    setStats({
-      total: leads.length,
-      new: leads.filter(l => l.status === 'new').length,
-      contacted: leads.filter(l => l.status === 'contacted').length,
-      closed: leads.filter(l => l.status === 'closed').length,
+    storage.getLeads().then(leads => {
+      setStats({
+        total: leads.length,
+        new: leads.filter(l => l.status === 'new').length,
+        contacted: leads.filter(l => l.status === 'contacted').length,
+        closed: leads.filter(l => l.status === 'closed').length,
+      });
     });
   }, []);
 

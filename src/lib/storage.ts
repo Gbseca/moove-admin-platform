@@ -1,6 +1,4 @@
-
-// Mock Storage Service using LocalStorage
-// This replaces Supabase for the "Demo Mode" requirement
+import { supabase } from './supabase';
 
 export interface Service {
   id: string;
@@ -13,8 +11,8 @@ export interface SiteConfig {
   heroTitle: string;
   heroSubtitle: string;
   consultantName: string;
-  phoneNumber: string; // Display format
-  whatsappNumber: string; // Raw format for link (e.g., 5521971118142)
+  phoneNumber: string;
+  whatsappNumber: string;
   services: Service[];
 }
 
@@ -26,11 +24,6 @@ export interface Lead {
   createdAt: string;
   status: 'new' | 'contacted' | 'closed';
 }
-
-const STORAGE_KEYS = {
-  CONFIG: 'moove_site_config',
-  LEADS: 'moove_leads',
-};
 
 const DEFAULT_CONFIG: SiteConfig = {
   heroTitle: 'Proteção Veicular Completa para Você',
@@ -50,39 +43,89 @@ const DEFAULT_CONFIG: SiteConfig = {
 
 export const storage = {
   // Config
-  getConfig: (): SiteConfig => {
-    const data = localStorage.getItem(STORAGE_KEYS.CONFIG);
-    if (!data) {
-      localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(DEFAULT_CONFIG));
+  getConfig: async (): Promise<SiteConfig> => {
+    try {
+      const { data, error } = await supabase
+        .from('site_sections')
+        .select('content')
+        .eq('id', 'main_config')
+        .single();
+
+      if (error || !data) {
+        // Return default if not found or error (e.g. table not created yet)
+        console.log('Config not found or error, using default:', error);
+        return DEFAULT_CONFIG;
+      }
+
+      return data.content as SiteConfig;
+    } catch (e) {
+      console.error('Exception fetching config:', e);
       return DEFAULT_CONFIG;
     }
-    return JSON.parse(data);
   },
 
-  saveConfig: (config: SiteConfig): void => {
-    localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
+  saveConfig: async (config: SiteConfig): Promise<void> => {
+    const { error } = await supabase
+      .from('site_sections')
+      .upsert({
+        id: 'main_config',
+        content: config,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error saving config:', error);
+      throw error;
+    }
   },
 
   // Leads
-  getLeads: (): Lead[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.LEADS);
-    return data ? JSON.parse(data) : [];
+  getLeads: async (): Promise<Lead[]> => {
+    const { data, error } = await supabase
+      .from('leads_pipeline')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching leads:', error);
+      return [];
+    }
+
+    return data.map((item: any) => ({
+      id: item.id,
+      name: item.customer_name,
+      phone: item.customer_phone,
+      vehicleModel: item.vehicle_model || '',
+      createdAt: item.created_at,
+      status: item.status as Lead['status'],
+    }));
   },
 
-  addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'status'>): void => {
-    const leads = storage.getLeads();
-    const newLead: Lead = {
-      ...lead,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString(),
-      status: 'new',
-    };
-    localStorage.setItem(STORAGE_KEYS.LEADS, JSON.stringify([newLead, ...leads]));
+  addLead: async (lead: Omit<Lead, 'id' | 'createdAt' | 'status'>): Promise<void> => {
+    const { error } = await supabase
+      .from('leads_pipeline')
+      .insert({
+        customer_name: lead.name,
+        customer_phone: lead.phone,
+        vehicle_model: lead.vehicleModel,
+        status: 'new'
+      });
+
+    if (error) {
+      console.error('Error adding lead:', error);
+      throw error;
+    }
   },
 
-  updateLeadStatus: (id: string, status: Lead['status']): void => {
-      const leads = storage.getLeads();
-      const updatedLeads = leads.map(l => l.id === id ? { ...l, status } : l);
-      localStorage.setItem(STORAGE_KEYS.LEADS, JSON.stringify(updatedLeads));
+  updateLeadStatus: async (id: string, status: Lead['status']): Promise<void> => {
+    const { error } = await supabase
+      .from('leads_pipeline')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating lead status:', error);
+      throw error;
+    }
   }
 };
