@@ -14,10 +14,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Mock login doesn't take arguments in our definition, but standard does.
+      // We ignore arguments for the mock anyway.
+      const { error } = await supabase.auth.signInWithPassword();
 
       if (error) throw error;
 
