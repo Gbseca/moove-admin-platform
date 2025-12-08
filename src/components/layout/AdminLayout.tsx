@@ -26,18 +26,20 @@ export default function AdminLayout() {
        return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    supabase.auth.getSession().then(({ data }: any) => {
+      setSession(data.session);
       setLoading(false);
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
       setSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+        if (data && data.subscription) {
+            data.subscription.unsubscribe();
+        }
+    };
   }, []);
 
   // Redirect if not authenticated

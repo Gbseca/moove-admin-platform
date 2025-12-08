@@ -7,6 +7,8 @@ import LoginPage from './pages/auth/LoginPage';
 
 // Lazy load admin pages
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const ContentManager = React.lazy(() => import('./pages/admin/ContentManager'));
+const LeadsManager = React.lazy(() => import('./pages/admin/LeadsManager'));
 
 function App() {
   return (
@@ -15,9 +17,6 @@ function App() {
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/sobre" element={<div className="container py-20">Sobre (Em construção)</div>} />
-          <Route path="/unidades" element={<div className="container py-20">Unidades (Em construção)</div>} />
-          <Route path="/depoimentos" element={<div className="container py-20">Depoimentos (Em construção)</div>} />
         </Route>
 
         {/* Auth Routes */}
@@ -30,9 +29,17 @@ function App() {
               <AdminDashboard />
             </Suspense>
           } />
-          <Route path="leads" element={<div className="p-4">Leads Kanban (Em construção)</div>} />
-          <Route path="content" element={<div className="p-4">Gestão de Conteúdo (Em construção)</div>} />
-          <Route path="team" element={<div className="p-4">Gestão de Equipe (Em construção)</div>} />
+          <Route path="leads" element={
+            <Suspense fallback={<div>Carregando leads...</div>}>
+              <LeadsManager />
+            </Suspense>
+          } />
+          <Route path="content" element={
+             <Suspense fallback={<div>Carregando editor...</div>}>
+               <ContentManager />
+             </Suspense>
+          } />
+          <Route path="team" element={<div className="p-8">Gestão de Equipe (Em breve)</div>} />
         </Route>
 
         {/* Catch all */}
