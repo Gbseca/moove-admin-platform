@@ -1,15 +1,12 @@
-# Moove Platform
+# Moove Platform | Site e gestão comercial
 
-Aplicacao web para gestao comercial da Moove, com area publica, painel administrativo, gestao de leads e conteudo. O projeto combina React, Supabase e um modo de demonstracao local para facilitar apresentacoes sem depender sempre de backend configurado.
+A presença pública e a rotina administrativa da Moove no mesmo projeto. O site apresenta a operação; o painel permite acompanhar leads e atualizar conteúdo. A aplicação também conta com um modo local de demonstração, útil para explorar a interface antes de configurar a integração com Supabase.
 
-## Funcionalidades
+## O que você encontra
 
-- Site publico com paginas de apresentacao e contato.
-- Area administrativa protegida por sessao do Supabase.
-- Dashboard para acompanhamento comercial.
-- Gestao de leads em formato operacional.
-- Gerenciamento de conteudo para alterar informacoes do site.
-- Modo local de demonstracao com armazenamento alternativo.
+- Separação entre páginas públicas e ambiente administrativo.
+- Gestão de leads e conteúdo com integração de dados.
+- Modo de demonstração para apresentar o fluxo da aplicação.
 
 ## Stack
 
@@ -28,7 +25,7 @@ npm install
 npm run dev
 ```
 
-Configure as variaveis seguindo `.env.example` quando for usar Supabase.
+Configure as variáveis seguindo `.env.example` quando for usar Supabase.
 
 ## Estrutura
 
@@ -39,10 +36,3 @@ src/
   pages/        Paginas publicas e administrativas
 supabase/       Migracoes e configuracoes de banco
 ```
-
-## Pontos De Engenharia
-
-- Separacao entre layout publico e administrativo.
-- Autenticacao integrada ao Supabase.
-- Estrutura preparada para evoluir como painel interno ou MVP de CRM.
-
